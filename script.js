@@ -28,10 +28,11 @@ form.addEventListener('submit', (event) => {
   // Calcular total y valor por hora
   const total = deliveryValues.reduce((sum, value) => sum + value, 0);
   const hourlyEarnings = hours * HOURLY_RATE;
+  const gTotal = total + hourlyEarnings;
   const date = new Date().toISOString().split('T')[0]; // Fecha en formato AAAA-MM-DD
 
   // Agregar al array
-  revenues.push({ date, hours, hourlyEarnings, deliveries, deliveryValues, total });
+  revenues.push({ date, hours, hourlyEarnings, deliveries, deliveryValues, total, gTotal: total + hourlyEarnings });
 
   // Guardar en localStorage
   saveToLocalStorage();
@@ -57,11 +58,13 @@ function updateUI() {
     grandTotal += revenue.total;
 
     const listItem = document.createElement('li');
-    listItem.textContent = `Registro ${index + 1}: ${revenue.date}, ${revenue.hours} hrs, $${revenue.hourlyEarnings} por horas, ${revenue.deliveries} repartos, Total: $${revenue.total}`;
+    listItem.textContent = `Registro ${index + 1}: ${revenue.date}, ${revenue.hours} hrs, $${revenue.hourlyEarnings} por horas, ${revenue.deliveries} repartos, Total: $${revenue.total}, Total General: $${revenue.gTotal}`;
     revenueList.appendChild(listItem);
   });
+let grandTotalSum = revenues.reduce((sum, revenue) => sum + revenue.gTotal, 0);
+totalRevenueDisplay.textContent = `Total General: $${grandTotalSum}`;
 
-  totalRevenueDisplay.textContent = `Total: $${grandTotal}`;
+  //totalRevenueDisplay.textContent = `Total: $${grandTotal}`;
 }
 
 // Eliminar registros por fecha
