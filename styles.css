@@ -31,6 +31,7 @@ form {
 label {
   font-weight: bold;
   margin-top: 10px;
+  color: #15ed2b;
 }
 
 input {
@@ -68,6 +69,7 @@ ul {
 li {
   font-size: 16px;
   margin: 5px 0;
+  color: #15ed2b;
 }
 
 #totalRevenue {
@@ -84,6 +86,7 @@ li {
 
   #totalRevenue {
     font-size: 18px;
+    color: #15ed2b;
   }
 }
 
@@ -100,6 +103,7 @@ li {
   font-size: 16px;
   border: 1px solid #ed15d4;
   border-radius: 5px;
+  color: #15ed2b;
 }
 
 #deleteButton {
