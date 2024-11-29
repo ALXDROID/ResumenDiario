@@ -124,4 +124,4 @@ deleteButton.addEventListener('click', () => {
   saveToLocalStorage();
   updateUI();
 });
-localStorage.clear();
+//localStorage.clear();
