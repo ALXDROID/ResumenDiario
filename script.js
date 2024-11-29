@@ -7,10 +7,37 @@ const deleteDateInput = document.getElementById('deleteDate');
 const HOURLY_RATE = 3125; // Valor por hora
 let revenues = []; // Array para guardar la recaudación
 
+// Función para obtener la fecha actual en formato DD-MM-AAAA en zona horaria de Santiago de Chile
+function getLocalDate() {
+  const options = { timeZone: 'America/Santiago', year: 'numeric', month: '2-digit', day: '2-digit' };
+  const formatter = new Intl.DateTimeFormat('es-CL', options);
+  const parts = formatter.formatToParts(new Date());
+  
+  const day = parts.find(part => part.type === 'day').value;
+  const month = parts.find(part => part.type === 'month').value;
+  const year = parts.find(part => part.type === 'year').value;
+  
+  return `${day}-${month}-${year}`;
+}
+
+// Convertir entre formatos de fecha
+function formatDateToDisplay(date) {
+  const [year, month, day] = date.split('-');
+  return `${day}-${month}-${year}`;
+}
+
+function formatDateToISO(date) {
+  const [day, month, year] = date.split('-');
+  return `${year}-${month}-${day}`;
+}
+
 // Cargar los datos desde localStorage al inicio
 window.onload = () => {
   const savedRevenues = JSON.parse(localStorage.getItem('revenues')) || [];
-  revenues = savedRevenues;
+  revenues = savedRevenues.map(revenue => ({
+    ...revenue,
+    date: formatDateToDisplay(revenue.date), // Convertir fecha al formato DD-MM-AAAA
+  }));
   updateUI(); // Mostrar los datos guardados
 };
 
@@ -29,10 +56,12 @@ form.addEventListener('submit', (event) => {
   const total = deliveryValues.reduce((sum, value) => sum + value, 0);
   const hourlyEarnings = hours * HOURLY_RATE;
   const gTotal = total + hourlyEarnings;
-  const date = new Date().toISOString().split('T')[0]; // Fecha en formato AAAA-MM-DD
+
+  // Obtener la fecha actual en la zona horaria de Santiago
+  const localDate = getLocalDate(); // Formato DD-MM-AAAA
 
   // Agregar al array
-  revenues.push({ date, hours, hourlyEarnings, deliveries, deliveryValues, total, gTotal: total + hourlyEarnings });
+  revenues.push({ date: localDate, hours, hourlyEarnings, deliveries, deliveryValues, total, gTotal });
 
   // Guardar en localStorage
   saveToLocalStorage();
@@ -46,7 +75,12 @@ form.addEventListener('submit', (event) => {
 
 // Función para guardar los datos en localStorage
 function saveToLocalStorage() {
-  localStorage.setItem('revenues', JSON.stringify(revenues));
+  // Convertir las fechas al formato ISO (AAAA-MM-DD) antes de guardar
+  const revenuesToSave = revenues.map(revenue => ({
+    ...revenue,
+    date: formatDateToISO(revenue.date),
+  }));
+  localStorage.setItem('revenues', JSON.stringify(revenuesToSave));
 }
 
 // Actualizar el DOM
@@ -61,19 +95,20 @@ function updateUI() {
     listItem.textContent = `Registro ${index + 1}: ${revenue.date}, ${revenue.hours} hrs, $${revenue.hourlyEarnings} por horas, ${revenue.deliveries} repartos, Total: $${revenue.total}, Total General: $${revenue.gTotal}`;
     revenueList.appendChild(listItem);
   });
-let grandTotalSum = revenues.reduce((sum, revenue) => sum + revenue.gTotal, 0);
-totalRevenueDisplay.textContent = `Total General: $${grandTotalSum}`;
 
-  //totalRevenueDisplay.textContent = `Total: $${grandTotal}`;
+  const grandTotalSum = revenues.reduce((sum, revenue) => sum + revenue.gTotal, 0);
+  totalRevenueDisplay.textContent = `Total General: $${grandTotalSum}`;
 }
 
 // Eliminar registros por fecha
 deleteButton.addEventListener('click', () => {
-  const deleteDate = deleteDateInput.value;
-  if (!deleteDate) {
+  const deleteDateRaw = deleteDateInput.value; // Fecha en formato AAAA-MM-DD
+  if (!deleteDateRaw) {
     alert('Por favor, selecciona una fecha.');
     return;
   }
+
+  const deleteDate = formatDateToDisplay(deleteDateRaw); // Convertir a DD-MM-AAAA
 
   // Filtrar registros que no coincidan con la fecha
   const initialCount = revenues.length;
@@ -89,3 +124,4 @@ deleteButton.addEventListener('click', () => {
   saveToLocalStorage();
   updateUI();
 });
+//localStorage.clear();
